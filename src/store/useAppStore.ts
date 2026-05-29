@@ -15,6 +15,7 @@ export type AppView =
   | "path"
   | "languages"
   | "achievements"
+  | "profile"   // ← added this
 
 export interface UserProfile {
   name: string

@@ -8,14 +8,22 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ onPath, onLesson }: MobileNavProps) {
-  const { setView } = useAppStore()
+  const { setView, user } = useAppStore()
+
+  const handleProfile = () => {
+    if (!user || user.isGuest) {
+      setView("signup")
+    } else {
+      setView("profile")
+    }
+  }
 
   const items = [
     { icon: BarChart2, label: "Home", action: () => setView("dashboard") },
     { icon: Map, label: "Path", action: onPath },
     { icon: BookOpen, label: "Lessons", action: onLesson },
-    { icon: Target, label: "Goals", action: () => {} },
-    { icon: User, label: "Profile", action: () => {} },
+    { icon: Target, label: "Goals", action: () => setView("achievements") },
+    { icon: User, label: "Profile", action: handleProfile },
   ]
 
   return (
