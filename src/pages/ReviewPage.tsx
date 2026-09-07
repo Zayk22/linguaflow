@@ -2,9 +2,10 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAppStore } from "@/store/useAppStore"
 import { getLanguageConfig } from "@/data/languages"
+import { speakText } from "@/lib/speech"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Zap, CheckCircle2, RotateCcw } from "lucide-react"
+import { ArrowLeft, Zap, CheckCircle2, Volume2 } from "lucide-react"
 
 export function ReviewPage() {
   const { activeLanguage, setView, getDueReviewItems, reviewItem } = useAppStore()
@@ -61,6 +62,13 @@ export function ReviewPage() {
     reviewItem(activeLanguage, item.id, quality)
     setRevealed(false)
     setCurrentIndex((i) => i + 1)
+  }
+
+  const speakAnswer = () => {
+    if (item?.answer) {
+      const langCode = activeLanguage === "spanish" ? "es-ES" : activeLanguage === "japanese" ? "ja-JP" : "tr-TR"
+      speakText(item.answer, langCode)
+    }
   }
 
   return (
@@ -128,8 +136,18 @@ export function ReviewPage() {
                   </Button>
                 ) : (
                   <div className="mt-6">
-                    <div className="text-2xl font-bold mb-4" style={{ color: accentColor }}>
-                      {item.answer}
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="text-2xl font-bold" style={{ color: accentColor }}>
+                        {item.answer}
+                      </div>
+                      <button
+                        onClick={speakAnswer}
+                        className="size-9 rounded-full flex items-center justify-center hover:bg-foreground/10 transition-colors"
+                        style={{ color: accentColor }}
+                        aria-label="Pronounce answer"
+                      >
+                        <Volume2 className="size-5" />
+                      </button>
                     </div>
                     <p className="text-sm text-muted-foreground mb-6">How well did you remember?</p>
                     <div className="grid grid-cols-3 gap-3">

@@ -1,4 +1,5 @@
 import { playCorrectSound, playIncorrectSound, playCompletionSound, playXpSound } from "@/lib/sounds"
+import { speakText } from "@/lib/speech"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 import { useAppStore } from "@/store/useAppStore"
@@ -6,7 +7,7 @@ import { getLanguageConfig, getLearningPath } from "@/data/languages"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, X, Zap, Check, RefreshCw, Trophy, Target, BadgeCheck } from "lucide-react"
+import { ArrowLeft, X, Zap, Check, RefreshCw, Trophy, Target, BadgeCheck, Volume2 } from "lucide-react"
 import confetti from "canvas-confetti"
 
 type QuestionType = "multiple-choice" | "typing" | "flashcard" | "listening"
@@ -117,6 +118,14 @@ export function LessonPage() {
         origin: { y: 0.6 },
         colors: ["#FFD700", "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4"],
       })
+    }
+  }
+
+  const speakAnswer = () => {
+    if (question?.answer) {
+      // Use language code based on active language
+      const langCode = activeLanguage === "spanish" ? "es-ES" : activeLanguage === "japanese" ? "ja-JP" : "tr-TR"
+      speakText(question.answer, langCode)
     }
   }
 
@@ -283,17 +292,27 @@ export function LessonPage() {
                   </p>
                 )}
               </div>
-              <Button
-                onClick={handleNext}
-                className="gap-2 font-semibold px-6"
-                style={{
-                  background: isCorrect ? "oklch(0.6 0.18 140)" : accentColor,
-                  color: "#fff",
-                }}
-              >
-                {questionIndex < questions.length - 1 ? "Continue" : "Finish"}
-                <ArrowLeft className="size-4 rotate-180" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={speakAnswer}
+                  className="size-10 rounded-full flex items-center justify-center hover:bg-foreground/10 transition-colors"
+                  style={{ color: accentColor }}
+                  aria-label="Pronounce answer"
+                >
+                  <Volume2 className="size-5" />
+                </button>
+                <Button
+                  onClick={handleNext}
+                  className="gap-2 font-semibold px-6"
+                  style={{
+                    background: isCorrect ? "oklch(0.6 0.18 140)" : accentColor,
+                    color: "#fff",
+                  }}
+                >
+                  {questionIndex < questions.length - 1 ? "Continue" : "Finish"}
+                  <ArrowLeft className="size-4 rotate-180" />
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
