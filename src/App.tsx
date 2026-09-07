@@ -1,4 +1,5 @@
 import { ProfilePage } from "@/pages/ProfilePage"
+import { ReviewPage } from "@/pages/ReviewPage"
 import { AnimatePresence, motion } from "framer-motion"
 import { useAppStore } from "@/store/useAppStore"
 import { LandingPage } from "@/pages/LandingPage"
@@ -46,6 +47,7 @@ function AppRouter() {
         {resolvedView === "languages" && <LanguagesPage />}
         {resolvedView === "achievements" && <AchievementsPage />}
         {resolvedView === "profile" && <ProfilePage />}
+        {resolvedView === "review" && <ReviewPage />}
       </motion.div>
     </AnimatePresence>
   )

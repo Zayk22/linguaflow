@@ -20,7 +20,7 @@ interface Question {
   audio?: string
 }
 
-function getQuestionsForLesson(lessonId: string, langId: string): Question[] {
+function getQuestionsForLesson(lessonId: string): Question[] {
   const lessonQuestions: Record<string, Question[]> = {
     "es-greet": [
       { type: "multiple-choice", prompt: 'How do you say "Hello" in Spanish?', answer: "Hola", options: ["Hola", "Bonjour", "Ciao", "Guten Tag"], hint: "Think warm greeting" },
@@ -45,8 +45,7 @@ function getQuestionsForLesson(lessonId: string, langId: string): Question[] {
     ],
   }
 
-  const defaultKey = Object.keys(lessonQuestions).find((k) => k.startsWith(langId.slice(0, 2)))
-  return lessonQuestions[lessonId] ?? lessonQuestions[defaultKey ?? "es-greet"] ?? []
+  return lessonQuestions[lessonId] ?? []
 }
 
 export function LessonPage() {
@@ -68,7 +67,7 @@ export function LessonPage() {
   const accentColor = langConfig?.accentColor ?? "oklch(0.65 0.22 38)"
   const glowColor = langConfig?.glowColor ?? "oklch(0.65 0.22 38 / 30%)"
 
-  const questions = getQuestionsForLesson(lesson?.id ?? "", activeLanguage)
+  const questions = getQuestionsForLesson(lesson?.id ?? "")
   const [questionIndex, setQuestionIndex] = useState(0)
   const [typingAnswer, setTypingAnswer] = useState("")
   const [selectedOption, setSelectedOption] = useState<string | null>(null)

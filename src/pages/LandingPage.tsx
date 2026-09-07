@@ -4,7 +4,7 @@ import { useAppStore } from "@/store/useAppStore"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LANGUAGES } from "@/data/languages"
-import { ArrowRight, Globe, Zap, Star, Play, Users, Trophy } from "lucide-react"
+import { ArrowRight, Globe, Clock, Flame, Zap, Award, BookOpen, Play } from "lucide-react"
 
 const FLOATING_WORDS = [
   { word: "こんにちは", lang: "Japanese", color: "text-pink-400" },
@@ -17,10 +17,17 @@ const FLOATING_WORDS = [
   { word: "Buenas", lang: "Spanish", color: "text-amber-300" },
 ]
 
-const STATS = [
-  { value: "2M+", label: "Learners", icon: Users },
-  { value: "3", label: "Languages", icon: Globe },
-  { value: "95%", label: "Completion Rate", icon: Trophy },
+const HONEST_STATS = [
+  { icon: Globe, label: "Languages", value: "3" },
+  { icon: Clock, label: "Self-Paced", value: "Always" },
+  { icon: Flame, label: "Streaks & XP", value: "Built-in" },
+]
+
+const REAL_FEATURES = [
+  { icon: Flame, label: "Streak Tracking", description: "Keep your daily learning momentum." },
+  { icon: Zap, label: "XP System", description: "Earn points for every lesson completed." },
+  { icon: Award, label: "Achievements", description: "Unlock badges as you progress." },
+  { icon: BookOpen, label: "Lesson Progression", description: "Structured lessons that build on each other." },
 ]
 
 export function LandingPage() {
@@ -46,8 +53,8 @@ export function LandingPage() {
         }}
       />
 
-      {/* Floating words background */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      {/* Floating words background (subtle) */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-40">
         {FLOATING_WORDS.map((item, i) => (
           <motion.div
             key={item.word}
@@ -129,7 +136,7 @@ export function LandingPage() {
               className="mb-8 gap-1.5 py-1.5 px-4 text-sm border border-border/50"
             >
               <Zap className="size-3.5" style={{ color: current.accentColor }} />
-              Premium Language Learning
+              Self-Paced Language Learning
             </Badge>
           </motion.div>
 
@@ -140,7 +147,7 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-5xl font-extrabold tracking-tight text-balance md:text-7xl lg:text-8xl"
           >
-            Master{" "}
+            Your path to{" "}
             <AnimatePresence mode="wait">
               <motion.span
                 key={current.id}
@@ -161,7 +168,7 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-2 text-5xl font-extrabold tracking-tight text-muted-foreground md:text-7xl lg:text-8xl"
           >
-            Fluently.
+            fluency.
           </motion.h2>
 
           {/* Animated language symbol */}
@@ -191,8 +198,8 @@ export function LandingPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed"
           >
-            An immersive, cinematic language learning experience designed for modern learners.
-            Built with science-backed methods. Powered by obsession.
+            A focused language learning app for Spanish, Japanese, and Turkish.
+            Practice daily, earn XP, and build streaks — at your own pace.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -218,122 +225,104 @@ export function LandingPage() {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => setView("login")}
-              className="gap-2 px-8 text-base border-border/40"
-            >
-              Sign In
-            </Button>
-
-            <Button
-              size="lg"
-              variant="ghost"
               onClick={signupAsGuest}
-              className="gap-2 px-8 text-base text-muted-foreground"
+              className="gap-2 px-8 text-base border-border/40"
             >
               <Play className="size-4" />
               Try as Guest
             </Button>
           </motion.div>
 
-          {/* Stats */}
+          {/* Language cards */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            className="mt-16 grid grid-cols-3 gap-8 md:gap-16"
+            transition={{ duration: 0.8, delay: 0.7 }}
+            className="mt-20 grid grid-cols-1 gap-4 md:grid-cols-3 w-full max-w-3xl"
           >
-            {STATS.map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-1">
-                <stat.icon className="size-5 text-muted-foreground mb-1" />
-                <span className="text-2xl font-bold md:text-3xl">{stat.value}</span>
-                <span className="text-xs text-muted-foreground">{stat.label}</span>
-              </div>
+            {LANGUAGES.map((lang, i) => (
+              <motion.button
+                key={lang.id}
+                whileHover={{ scale: 1.02, y: -4 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
+                onClick={() => setView("signup")}
+                className="glass rounded-2xl p-6 text-left transition-all hover:glow-lang cursor-pointer"
+                style={
+                  {
+                    "--lang-glow": lang.glowColor,
+                  } as React.CSSProperties
+                }
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-4xl">{lang.flag}</span>
+                  <ArrowRight className="size-4 text-muted-foreground" />
+                </div>
+                <div
+                  className="mb-1 text-xl font-bold"
+                  style={{ color: lang.accentColor }}
+                >
+                  {lang.symbol}
+                </div>
+                <h3 className="text-lg font-semibold">{lang.name}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{lang.tagline}</p>
+              </motion.button>
             ))}
           </motion.div>
         </div>
 
-        {/* Language cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="mt-24 grid grid-cols-1 gap-4 md:grid-cols-3"
-        >
-          {LANGUAGES.map((lang, i) => (
-            <motion.button
-              key={lang.id}
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.9 + i * 0.1 }}
-              onClick={() => {
-                setView("signup")
-              }}
-              className="glass rounded-2xl p-6 text-left transition-all hover:glow-lang cursor-pointer"
-              style={
-                {
-                  "--lang-glow": lang.glowColor,
-                } as React.CSSProperties
-              }
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-4xl">{lang.flag}</span>
-                <ArrowRight className="size-4 text-muted-foreground" />
-              </div>
-              <div
-                className="mb-1 text-xl font-bold"
-                style={{ color: lang.accentColor }}
-              >
-                {lang.symbol}
-              </div>
-              <h3 className="text-lg font-semibold">{lang.name}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{lang.tagline}</p>
-              <div className="mt-4 flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className="size-3.5"
-                    style={{ color: lang.accentColor }}
-                    fill={lang.accentColor}
-                  />
-                ))}
-                <span className="ml-1 text-xs text-muted-foreground">5.0</span>
-              </div>
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Feature highlights */}
-        <motion.div
+        {/* Honest stats and features combined */}
+        <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-20 grid grid-cols-2 gap-4 md:grid-cols-4"
+          transition={{ duration: 0.8, delay: 1.1 }}
+          className="mt-24"
         >
-          {[
-            { label: "Streak Tracking", icon: "🔥" },
-            { label: "XP System", icon: "⚡" },
-            { label: "AI Lessons", icon: "🧠" },
-            { label: "Offline Mode", icon: "📱" },
-          ].map((feature, i) => (
-            <motion.div
-              key={feature.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 + i * 0.1 }}
-              className="glass rounded-xl px-4 py-3 flex items-center gap-3"
-            >
-              <span className="text-xl">{feature.icon}</span>
-              <span className="text-sm font-medium">{feature.label}</span>
-            </motion.div>
-          ))}
-        </motion.div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+              Built for focused, daily practice
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+              Solid tools to help you build a consistent language habit.
+            </p>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-6 max-w-2xl mx-auto mb-16">
+            {HONEST_STATS.map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center gap-1">
+                <stat.icon className="size-5 text-muted-foreground mb-1" />
+                <span className="text-2xl font-bold">{stat.value}</span>
+                <span className="text-xs text-muted-foreground">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature list (two-column layout) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            {REAL_FEATURES.map((feature) => (
+              <div
+                key={feature.label}
+                className="glass rounded-xl p-5 flex items-start gap-4"
+              >
+                <div className="shrink-0 w-10 h-10 rounded-lg bg-foreground/5 flex items-center justify-center">
+                  <feature.icon className="size-5 text-foreground/70" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">{feature.label}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
       </main>
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border/30 py-8 text-center text-sm text-muted-foreground">
-        <p>© 2026 LinguaFlow · Premium Language Learning</p>
+        <p>© 2026 LinguaFlow · Personal Language Learning Project</p>
       </footer>
     </div>
   )

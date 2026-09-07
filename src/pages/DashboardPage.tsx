@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import {
   Flame, Zap, Trophy, BookOpen, Target, TrendingUp,
   LogOut, Settings, BarChart2, Map, Star, Lock, ChevronRight,
-  Clock, Calendar
+  Clock, Calendar, RefreshCw
 } from "lucide-react"
 import { XpRing } from "@/components/dashboard/XpRing"
 import { ActivityHeatmap } from "@/components/dashboard/ActivityHeatmap"
@@ -21,7 +21,7 @@ const STAGGER = {
 }
 
 export function DashboardPage() {
-  const { user, activeLanguage, logout, setView, setActiveLessonId, getActiveLanguageProgress } = useAppStore()
+  const { user, activeLanguage, logout, setView, setActiveLessonId, getActiveLanguageProgress, getDueReviewItems } = useAppStore()
 
   const langProgress = getActiveLanguageProgress()
   if (!langProgress || !activeLanguage) {
@@ -38,6 +38,7 @@ export function DashboardPage() {
   const levelXp = 1000
   const levelProgress = (totalXp % levelXp) / levelXp * 100
   const userLevel = Math.floor(totalXp / levelXp) + 1
+  const dueReviewCount = getDueReviewItems(activeLanguage).length
 
   const accentColor = langConfig?.accentColor ?? "oklch(0.65 0.22 38)"
   const glowColor = langConfig?.glowColor ?? "oklch(0.65 0.22 38 / 30%)"
@@ -70,6 +71,7 @@ export function DashboardPage() {
               { icon: BarChart2, label: "Dashboard", active: true },
               { icon: Map, label: "Learning Path", action: () => setView("path") },
               { icon: BookOpen, label: "Lessons", action: () => setView("lesson") },
+              { icon: RefreshCw, label: "Review", action: () => setView("review") },
               { icon: Trophy, label: "Achievements", action: () => setView("achievements") },
               { icon: Target, label: "Goals" },
               { icon: TrendingUp, label: "Progress" },
@@ -177,6 +179,37 @@ export function DashboardPage() {
                 </motion.div>
               ))}
             </motion.div>
+
+            {/* Review due card */}
+            {dueReviewCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-2xl border p-4 mb-6 flex items-center justify-between"
+                style={{
+                  borderColor: `${accentColor}50`,
+                  background: `color-mix(in oklch, ${accentColor} 10%, transparent)`,
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <RefreshCw className="size-5" style={{ color: accentColor }} />
+                  <div>
+                    <div className="font-semibold">{dueReviewCount} items due for review</div>
+                    <div className="text-xs text-muted-foreground">Strengthen your memory with spaced repetition</div>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setView("review")}
+                  size="sm"
+                  className="gap-2 font-semibold"
+                  style={{ background: accentColor, color: "#fff" }}
+                >
+                  Review Now
+                  <ChevronRight className="size-4" />
+                </Button>
+              </motion.div>
+            )}
 
             {/* XP Level progress + Continue card */}
             <motion.div

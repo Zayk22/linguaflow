@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { VOCABULARY_ITEMS } from "@/data/vocabulary"
 
 export type Language = "spanish" | "japanese" | "turkish"
 export type SkillLevel = "beginner" | "intermediate" | "advanced"
@@ -15,7 +16,8 @@ export type AppView =
   | "path"
   | "languages"
   | "achievements"
-  | "profile"   // ← added this
+  | "profile"
+  | "review"
 
 export interface UserProfile {
   name: string
@@ -30,6 +32,19 @@ export interface LessonProgress {
   completedAt?: string
 }
 
+export interface ReviewItem {
+  id: string
+  lang: Language
+  prompt: string
+  answer: string
+  hint?: string
+  interval: number
+  easeFactor: number
+  repetitions: number
+  dueDate: string
+  lastReviewedAt?: string
+}
+
 export interface LanguageProgress {
   xp: number
   streak: number
@@ -38,6 +53,7 @@ export interface LanguageProgress {
   learningGoal: LearningGoal
   dailyGoal: DailyGoal
   lessonProgress: Record<string, LessonProgress>
+  reviewItems: Record<string, ReviewItem>
   onboardingComplete: boolean
   addedDate: string
 }
@@ -61,6 +77,9 @@ interface AppState {
   logout: () => void
   signupAsGuest: () => void
   getActiveLanguageProgress: () => LanguageProgress | null
+  addReviewItem: (lang: Language, item: ReviewItem) => void
+  reviewItem: (lang: Language, itemId: string, quality: 0 | 3 | 5) => void
+  getDueReviewItems: (lang: Language) => ReviewItem[]
 }
 
 const DEFAULT_LANGUAGE_PROGRESS: LanguageProgress = {
@@ -70,6 +89,7 @@ const DEFAULT_LANGUAGE_PROGRESS: LanguageProgress = {
   learningGoal: "travel",
   dailyGoal: 10,
   lessonProgress: {},
+  reviewItems: {},
   onboardingComplete: false,
   addedDate: new Date().toISOString(),
 }
@@ -123,6 +143,25 @@ export const useAppStore = create<AppState>()(
       completeLesson: (lang, lessonId, xp) =>
         set((state) => {
           const current = state.languagesProgress[lang]
+
+          // Add vocabulary items for this lesson to the review queue
+          const newReviewItems = { ...current.reviewItems }
+          for (const vocab of VOCABULARY_ITEMS.filter((v) => v.sourceLessonId === lessonId)) {
+            if (!newReviewItems[vocab.id]) {
+              newReviewItems[vocab.id] = {
+                id: vocab.id,
+                lang: vocab.lang,
+                prompt: vocab.prompt,
+                answer: vocab.answer,
+                hint: vocab.hint,
+                interval: 0,
+                easeFactor: 2.5,
+                repetitions: 0,
+                dueDate: new Date().toISOString(),
+              }
+            }
+          }
+
           return {
             languagesProgress: {
               ...state.languagesProgress,
@@ -138,10 +177,85 @@ export const useAppStore = create<AppState>()(
                     completedAt: new Date().toISOString(),
                   },
                 },
+                reviewItems: newReviewItems,
               },
             },
           }
         }),
+
+      addReviewItem: (lang, item) =>
+        set((state) => ({
+          languagesProgress: {
+            ...state.languagesProgress,
+            [lang]: {
+              ...state.languagesProgress[lang],
+              reviewItems: {
+                ...state.languagesProgress[lang].reviewItems,
+                [item.id]: item,
+              },
+            },
+          },
+        })),
+
+      reviewItem: (lang, itemId, quality) =>
+        set((state) => {
+          const current = state.languagesProgress[lang]
+          const item = current.reviewItems[itemId]
+          if (!item) return state
+
+          let repetitions = item.repetitions
+          let interval = item.interval
+          let easeFactor = item.easeFactor
+
+          if (quality < 3) {
+            repetitions = 0
+            interval = 0
+            easeFactor = Math.max(1.3, easeFactor - 0.2)
+          } else {
+            repetitions += 1
+            if (repetitions === 1) {
+              interval = 1
+            } else if (repetitions === 2) {
+              interval = 3
+            } else {
+              interval = Math.round(interval * easeFactor)
+            }
+            easeFactor += (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+            easeFactor = Math.max(1.3, easeFactor)
+          }
+
+          const dueDate = new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString()
+          const updatedItem: ReviewItem = {
+            ...item,
+            repetitions,
+            interval,
+            easeFactor,
+            dueDate,
+            lastReviewedAt: new Date().toISOString(),
+          }
+
+          return {
+            languagesProgress: {
+              ...state.languagesProgress,
+              [lang]: {
+                ...current,
+                reviewItems: {
+                  ...current.reviewItems,
+                  [itemId]: updatedItem,
+                },
+              },
+            },
+          }
+        }),
+
+      getDueReviewItems: (lang) => {
+        const state = get()
+        const now = new Date()
+        const items = state.languagesProgress[lang].reviewItems
+        return Object.values(items)
+          .filter((item) => new Date(item.dueDate) <= now)
+          .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      },
 
       logout: () =>
         set({
